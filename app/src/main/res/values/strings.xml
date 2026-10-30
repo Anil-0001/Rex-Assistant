@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">AI Assistant</string>
-    <string name="assistant_ready">Assistant Online</string>
-    <string name="assistant_desc">Privacy-first personal assistant engine</string>
-    <string name="action_tap_to_speak">Tap to speak or type command</string>
-    <string name="status_idle">IDLE / READY</string>
+    <string name="app_name">R.E.X.</string>
+    <string name="assistant_ready">R.E.X. Online</string>
+    <string name="assistant_desc">Responsive Edge Executor — AI Assistant</string>
+    <string name="action_tap_to_speak">Tap to speak or type command to R.E.X.</string>
+    <string name="status_idle">R.E.X. // IDLE &amp; READY</string>
     <string name="quick_actions_title">QUICK SYSTEM CHECKS</string>
     <string name="cmd_check_battery">Battery Status</string>
     <string name="cmd_open_wifi">Wi-Fi Settings</string>

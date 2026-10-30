@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
         ) {
-            displayResponse("🎙️ Mic active! Ready for Phase 3 speech integration.\nTry typing commands (e.g. 'battery', 'open youtube', 'wifi settings').")
+            displayResponse("🎙️ R.E.X. Audio Core active!\nListening channel open. Try typing or testing commands.")
         } else {
             requestAudioPermission.launch(Manifest.permission.RECORD_AUDIO)
         }

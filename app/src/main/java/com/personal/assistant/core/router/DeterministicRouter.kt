@@ -6,7 +6,24 @@ import com.personal.assistant.core.actions.AndroidActionExecutor
 class DeterministicRouter(private val executor: AndroidActionExecutor) {
 
     fun execute(rawInput: String): ActionResult {
-        val input = rawInput.trim().lowercase()
+        var input = rawInput.trim().lowercase()
+
+        // Strip "rex", "hey rex", "rex sun" prefix if user addresses by name
+        val namePrefixes = listOf("hey rex ", "rex ", "rex sun ", "sun rex ")
+        for (prefix in namePrefixes) {
+            if (input.startsWith(prefix)) {
+                input = input.removePrefix(prefix).trim()
+                break
+            }
+        }
+
+        // R.E.X. identity / who are you check
+        if (input == "kaun ho" || input == "who are you" || input == "rex" || input == "status") {
+            return ActionResult.Success(
+                message = "Main hoon R.E.X. (Responsive Edge Executor) — aapka personal on-device AI assistant.",
+                details = "System: All cores operational | Mode: Local Offline Priority"
+            )
+        }
 
         // Battery check
         if (input.contains("battery") || input.contains("charge") || input.contains("charging")) {
