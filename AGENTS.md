@@ -3,16 +3,19 @@
 ## Project Identity & Architecture
 - **Project:** R.E.X. — Responsive Edge Executor (Iron Man / J.A.R.V.I.S. inspired on-device assistant).
 - **Target Device:** OnePlus Nord CE 2 Lite 5G (Snapdragon 695, Android 14 API 34, non-rooted).
+- **Aesthetic:** Iron Man Crimson Red (`#FF1A3C`), Ember Gold (`#FF8C00`), and Obsidian Dark (`#080406`).
 - **Core Philosophy:** ₹0 budget, privacy-first, on-device action registry, modular architecture.
 - **Cross-Platform:** Works on Ubuntu Linux (office) and Windows (Asus laptop at home).
 
 ## Current Project State & Master Context
 - Full historical context, decisions, and current progress are documented in `PROJECT_CONTEXT.md`.
-- **Phase 1 is 100% COMPLETE & VERIFIED on phone** (tested and working on the OnePlus phone).
-- **Current Next Step:** **Phase 2 (Deep Phone Control & Safety Engine)**:
-  1. Confirmation dialog modal for sensitive actions.
-  2. Dynamic installed app scanner.
-  3. Storage & Network telemetry.
+- **Phase 1 is 100% COMPLETE & VERIFIED on phone.**
+- **Phase 2 is 100% COMPLETE & VERIFIED (Build & Tested):**
+  1. Iron Man Crimson Red theme redesign (goodbye blue!).
+  2. Safety Confirmation Dialog Modal (`dialog_confirmation.xml`) for sensitive/mutating actions.
+  3. Dynamic installed app scanner (indexes and launches any installed app: camera, calculator, etc.).
+  4. Real-time Internal Storage telemetry (GB free / total) and Network capabilities (Wi-Fi vs Cellular 5G).
+- **Current Next Step:** **Phase 3 (Voice Interaction Pipeline: Offline TTS + Tap-to-Talk STT)**.
 
 ## Development Rules for Agent:
 1. Do not require Android Studio or heavy emulators (preserve 8 GB RAM on host machines).

@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_dark">#0A0E17</color>
-    <color name="card_bg">#121824</color>
-    <color name="card_border">#1E2638</color>
-    <color name="card_inner">#171F30</color>
+    <!-- Backgrounds (Deep Crimson / Obsidian Stark Tech) -->
+    <color name="bg_dark">#080406</color>
+    <color name="card_bg">#140A0F</color>
+    <color name="card_border">#2A121D</color>
+    <color name="card_inner">#1F0E17</color>
 
-    <!-- Glowing Accents -->
-    <color name="neon_cyan">#00F2FE</color>
-    <color name="electric_blue">#4FACFE</color>
-    <color name="glow_teal">#05D5B2</color>
+    <!-- Iron Man Crimson Core Accents -->
+    <color name="crimson_red">#FF1A3C</color>
+    <color name="electric_scarlet">#FF3B30</color>
+    <color name="ember_orange">#FF8C00</color>
+    <color name="gold_accent">#FFD700</color>
 
     <!-- Status Indicators -->
     <color name="status_green">#00E676</color>
     <color name="status_amber">#FFAB00</color>
-    <color name="status_red">#FF1744</color>
+    <color name="status_red">#FF1A3C</color>
 
     <!-- Typography -->
-    <color name="text_primary">#F0F6FC</color>
-    <color name="text_secondary">#8B949E</color>
-    <color name="text_dim">#484F58</color>
+    <color name="text_primary">#FFF1F3</color>
+    <color name="text_secondary">#A88F9A</color>
+    <color name="text_dim">#5C4550</color>
 </resources>

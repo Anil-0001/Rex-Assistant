@@ -4,8 +4,8 @@
         <item name="android:statusBarColor">@color/bg_dark</item>
         <item name="android:navigationBarColor">@color/bg_dark</item>
         <item name="android:windowBackground">@color/bg_dark</item>
-        <item name="colorPrimary">@color/electric_blue</item>
-        <item name="colorSecondary">@color/neon_cyan</item>
+        <item name="colorPrimary">@color/crimson_red</item>
+        <item name="colorSecondary">@color/ember_orange</item>
         <item name="colorSurface">@color/card_bg</item>
         <item name="colorOnSurface">@color/text_primary</item>
     </style>

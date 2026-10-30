@@ -23,7 +23,7 @@
             android:layout_width="10dp"
             android:layout_height="10dp"
             android:background="@drawable/chip_background"
-            android:backgroundTint="@color/status_green" />
+            android:backgroundTint="@color/crimson_red" />
 
         <TextView
             android:id="@+id/tvAppTitle"
@@ -31,11 +31,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_weight="1"
-            android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.08"
+            android:fontFamily="sans-serif-black"
+            android:letterSpacing="0.1"
             android:text="@string/app_name"
             android:textColor="@color/text_primary"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
         <TextView
@@ -45,29 +45,29 @@
             android:background="@drawable/chip_background"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
-            android:text="OFFLINE FIRST"
-            android:textColor="@color/neon_cyan"
+            android:text="PHASE 2 • SECURE"
+            android:textColor="@color/ember_orange"
             android:textSize="11sp"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Center Assistant Visualizer Orb -->
+    <!-- Center R.E.X. Arc Reactor Core Orb -->
     <FrameLayout
         android:id="@+id/orbContainer"
         android:layout_width="140dp"
         android:layout_height="140dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerLayout">
 
-        <!-- Outer Ring -->
+        <!-- Outer Pulsing Ring -->
         <View
             android:id="@+id/orbOuterRing"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/mic_button_background"
-            android:alpha="0.15" />
+            android:alpha="0.2" />
 
         <!-- Inner Core -->
         <View
@@ -76,7 +76,7 @@
             android:layout_height="80dp"
             android:layout_gravity="center"
             android:background="@drawable/mic_button_background"
-            android:alpha="0.85" />
+            android:alpha="0.9" />
     </FrameLayout>
 
     <TextView
@@ -85,20 +85,21 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:fontFamily="sans-serif-medium"
-        android:letterSpacing="0.05"
+        android:letterSpacing="0.06"
         android:text="@string/status_idle"
-        android:textColor="@color/neon_cyan"
+        android:textColor="@color/crimson_red"
         android:textSize="13sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/orbContainer" />
 
-    <!-- Live Response / Conversation Card -->
+    <!-- Live Intelligence Response Card -->
     <LinearLayout
         android:id="@+id/cardResponse"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginVertical="16dp"
+        android:layout_marginVertical="14dp"
         android:background="@drawable/card_background"
         android:orientation="vertical"
         android:padding="16dp"
@@ -126,18 +127,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:lineSpacingExtra="4dp"
-                android:text="R.E.X. online. Ready for command, boss. Tap the mic or enter instructions."
+                android:text="R.E.X. Online. Crimson Core active. Storage, network telemetry and dynamic app scanner initialized."
                 android:textColor="@color/text_primary"
                 android:textSize="15sp" />
         </ScrollView>
     </LinearLayout>
 
-    <!-- Quick Actions Horizontal Scroll -->
+    <!-- Quick Action Chips (Phase 2 Expanded) -->
     <HorizontalScrollView
         android:id="@+id/quickActionsScroll"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="14dp"
         android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@id/inputBarLayout"
         app:layout_constraintEnd_toEndOf="parent"
@@ -161,37 +162,61 @@
                 app:backgroundTint="@null" />
 
             <Button
+                android:id="@+id/btnStorage"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/chip_background"
+                android:text="💾 Storage"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                app:backgroundTint="@null" />
+
+            <Button
+                android:id="@+id/btnNetwork"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/chip_background"
+                android:text="📶 Network"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                app:backgroundTint="@null" />
+
+            <Button
+                android:id="@+id/btnAppScan"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/chip_background"
+                android:text="📱 Index Apps"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                app:backgroundTint="@null" />
+
+            <Button
                 android:id="@+id/btnWifi"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/chip_background"
-                android:text="📶 Wi-Fi Settings"
+                android:text="⚙️ Wi-Fi Panel"
                 android:textColor="@color/text_primary"
                 android:textSize="12sp"
                 app:backgroundTint="@null" />
 
             <Button
-                android:id="@+id/btnDeviceInfo"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="wrap_content"
-                android:layout_height="38dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/chip_background"
-                android:text="📱 Device Info"
-                android:textColor="@color/text_primary"
-                android:textSize="12sp"
-                app:backgroundTint="@null" />
-
-            <Button
-                android:id="@+id/btnYouTube"
+                android:id="@+id/btnSafetyDemo"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
                 android:background="@drawable/chip_background"
-                android:text="▶️ YouTube"
-                android:textColor="@color/text_primary"
+                android:text="🛡️ Safety Test"
+                android:textColor="@color/crimson_red"
                 android:textSize="12sp"
                 app:backgroundTint="@null" />
         </LinearLayout>
@@ -216,7 +241,7 @@
             android:layout_marginEnd="12dp"
             android:layout_weight="1"
             android:background="@drawable/card_background"
-            android:hint="Type command (e.g. open youtube)..."
+            android:hint="Talk to R.E.X. (e.g. storage, camera, network)..."
             android:imeOptions="actionDone"
             android:inputType="text"
             android:paddingHorizontal="16dp"

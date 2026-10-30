@@ -3,11 +3,14 @@ package com.personal.assistant.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.personal.assistant.R
@@ -25,10 +28,10 @@ class MainActivity : AppCompatActivity() {
     private val requestAudioPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
-                Toast.makeText(this, "Microphone permission granted!", Toast.LENGTH_SHORT).show()
-                displayResponse("Microphone ready. Speech-to-Text engine will activate in Phase 3.")
+                Toast.makeText(this, "R.E.X. Audio Core authorized!", Toast.LENGTH_SHORT).show()
+                displayResponse("🎙️ R.E.X. Audio Core active!\nListening channel open. Ready for Phase 3 speech engine.")
             } else {
-                displayResponse("Microphone permission was denied. Tap to retry.")
+                displayResponse("Microphone permission was denied. Tap mic to retry.")
             }
         }
 
@@ -42,24 +45,41 @@ class MainActivity : AppCompatActivity() {
 
         setupUI()
         startOrbPulseAnimation()
+
+        // Asynchronously warm-up the installed apps index in background
+        Thread {
+            executor.indexInstalledApps()
+        }.start()
     }
 
     private fun setupUI() {
-        // Quick Actions
+        // Quick Action Chips
         binding.btnBattery.setOnClickListener {
             handleResult(executor.getBatteryStatus())
+        }
+
+        binding.btnStorage.setOnClickListener {
+            handleResult(executor.getStorageStatus())
+        }
+
+        binding.btnNetwork.setOnClickListener {
+            handleResult(executor.getNetworkStatus())
+        }
+
+        binding.btnAppScan.setOnClickListener {
+            val apps = executor.indexInstalledApps()
+            handleResult(ActionResult.Success(
+                message = "R.E.X. indexed ${apps.size} launchable apps.",
+                details = "Sample apps: " + apps.take(10).joinToString { it.label }
+            ))
         }
 
         binding.btnWifi.setOnClickListener {
             handleResult(executor.openWifiSettings())
         }
 
-        binding.btnDeviceInfo.setOnClickListener {
-            handleResult(executor.getDeviceInfo())
-        }
-
-        binding.btnYouTube.setOnClickListener {
-            handleResult(executor.launchAppByName("youtube"))
+        binding.btnSafetyDemo.setOnClickListener {
+            handleResult(executor.requestClearDataSimulation())
         }
 
         // Text command input
@@ -83,15 +103,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun processCommand(command: String) {
-        binding.tvStatus.text = "EXECUTING..."
-        binding.tvStatus.setTextColor(getColor(R.color.electric_blue))
+        binding.tvStatus.text = "R.E.X. // EXECUTING..."
+        binding.tvStatus.setTextColor(getColor(R.color.ember_orange))
 
         val result = router.execute(command)
         handleResult(result)
 
         binding.tvStatus.postDelayed({
             binding.tvStatus.text = getString(R.string.status_idle)
-            binding.tvStatus.setTextColor(getColor(R.color.neon_cyan))
+            binding.tvStatus.setTextColor(getColor(R.color.crimson_red))
         }, 1500)
     }
 
@@ -102,19 +122,52 @@ class MainActivity : AppCompatActivity() {
                     append("✅ ")
                     append(result.message)
                     if (!result.details.isNullOrEmpty()) {
-                        append("\n\nDetails: ")
+                        append("\n\nTelemetry:\n")
                         append(result.details)
                     }
                 }
                 displayResponse(fullMsg)
             }
             is ActionResult.RequiresConfirmation -> {
-                displayResponse("⚠️ Confirmation Required: ${result.prompt}")
+                showSafetyConfirmationModal(result)
             }
             is ActionResult.Error -> {
                 displayResponse("❌ ${result.reason}")
             }
         }
+    }
+
+    private fun showSafetyConfirmationModal(confirmation: ActionResult.RequiresConfirmation) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_confirmation, null)
+        val tvTitle = dialogView.findViewById<TextView>(R.id.tvModalTitle)
+        val tvActionId = dialogView.findViewById<TextView>(R.id.tvModalActionId)
+        val tvPrompt = dialogView.findViewById<TextView>(R.id.tvModalPrompt)
+        val btnCancel = dialogView.findViewById<android.widget.Button>(R.id.btnCancel)
+        val btnConfirm = dialogView.findViewById<android.widget.Button>(R.id.btnConfirm)
+
+        tvTitle.text = confirmation.title
+        tvActionId.text = "ACTION: ${confirmation.actionId}"
+        tvPrompt.text = confirmation.prompt
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+            displayResponse("🛡️ Security Alert: Action [${confirmation.actionId}] aborted by user.")
+        }
+
+        btnConfirm.setOnClickListener {
+            dialog.dismiss()
+            val executedResult = confirmation.onConfirm()
+            handleResult(executedResult)
+        }
+
+        dialog.show()
     }
 
     private fun displayResponse(text: String) {
@@ -125,15 +178,15 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
         ) {
-            displayResponse("🎙️ R.E.X. Audio Core active!\nListening channel open. Try typing or testing commands.")
+            displayResponse("🎙️ R.E.X. Crimson Audio Core active!\nListening channel open. Tap quick chips or type commands.")
         } else {
             requestAudioPermission.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
 
     private fun startOrbPulseAnimation() {
-        val pulse = AlphaAnimation(0.2f, 0.6f).apply {
-            duration = 1400
+        val pulse = AlphaAnimation(0.2f, 0.7f).apply {
+            duration = 1200
             repeatMode = Animation.REVERSE
             repeatCount = Animation.INFINITE
         }

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/card_background"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Title / Warning Badge -->
+    <TextView
+        android:id="@+id/tvModalTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-black"
+        android:letterSpacing="0.08"
+        android:text="⚠️ SECURITY CONFIRMATION"
+        android:textColor="@color/crimson_red"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <!-- Subtitle / Action ID -->
+    <TextView
+        android:id="@+id/tvModalActionId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:fontFamily="monospace"
+        android:text="ACTION_ID: UNKNOWN"
+        android:textColor="@color/ember_orange"
+        android:textSize="11sp" />
+
+    <!-- Prompt Message -->
+    <TextView
+        android:id="@+id/tvModalPrompt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="16dp"
+        android:lineSpacingExtra="4dp"
+        android:text="R.E.X. is requesting explicit confirmation before proceeding."
+        android:textColor="@color/text_primary"
+        android:textSize="14sp" />
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnCancel"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_marginEnd="12dp"
+            android:text="ABORT"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnConfirm"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:background="@drawable/chip_background"
+            android:backgroundTint="@color/crimson_red"
+            android:paddingHorizontal="18dp"
+            android:text="CONFIRM &amp; EXECUTE"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/crimson_red" />
+    </LinearLayout>
+
+</LinearLayout>
