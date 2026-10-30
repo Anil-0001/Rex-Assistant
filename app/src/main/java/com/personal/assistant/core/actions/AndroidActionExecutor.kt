@@ -60,16 +60,18 @@ class AndroidActionExecutor(private val context: Context) {
             val freeBytes = availableBlocks * blockSize
             val usedBytes = totalBytes - freeBytes
 
-            val df = DecimalFormat("#.##")
-            val totalGB = df.format(totalBytes / (1024.0 * 1024.0 * 1024.0))
-            val freeGB = df.format(freeBytes / (1024.0 * 1024.0 * 1024.0))
-            val usedGB = df.format(usedBytes / (1024.0 * 1024.0 * 1024.0))
+            // Convert Bytes to Gigabytes (GB) -> Divide by 1024^3
+            val bytesInGB = 1024.0 * 1024.0 * 1024.0
+            val df = DecimalFormat("#.#")
+            val totalGB = df.format(totalBytes / bytesInGB)
+            val freeGB = df.format(freeBytes / bytesInGB)
+            val usedGB = df.format(usedBytes / bytesInGB)
 
-            val freePct = ((freeBytes.toDouble() / totalBytes.toDouble()) * 100).toInt()
+            val freePct = if (totalBytes > 0) ((freeBytes.toDouble() / totalBytes.toDouble()) * 100).toInt() else 0
 
             ActionResult.Success(
-                message = "Storage: $freeGB GB free of $totalGB GB ($freePct% remaining)",
-                details = "Used: $usedGB GB | Free: $freeGB GB | Total: $totalGB GB"
+                message = "Storage: $freeGB GB free of $totalGB GB ($freePct% free)",
+                details = "Used Space: $usedGB GB | Total Allocated: $totalGB GB"
             )
         } catch (e: Exception) {
             ActionResult.Error("Unable to calculate storage: ${e.localizedMessage}")
