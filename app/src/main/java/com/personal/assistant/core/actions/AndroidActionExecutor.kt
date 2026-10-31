@@ -180,18 +180,38 @@ class AndroidActionExecutor(private val context: Context) {
         val apps = indexInstalledApps()
         val cleanQuery = query.trim().lowercase()
 
-        // 1. Exact match
-        var matched = apps.firstOrNull { it.label.lowercase() == cleanQuery }
+        // Common Hindi transliteration aliases
+        val targetQuery = when (cleanQuery) {
+            "व्हाट्सएप", "व्हाट्सऐप", "वाट्सएप", "whatsapp" -> "whatsapp"
+            "यूट्यूब", "युटुब", "youtube" -> "youtube"
+            "कैमरा", "camera" -> "camera"
+            "कैलकुलेटर", "calculator" -> "calculator"
+            "गैलरी", "gallery", "photos", "फोटो" -> "photos"
+            "सेटिंग्स", "सेटिंग", "settings" -> "settings"
+            "क्रोम", "chrome" -> "chrome"
+            else -> cleanQuery
+        }
+
+        // 1. Exact match (label or package)
+        var matched = apps.firstOrNull { it.label.lowercase() == targetQuery }
 
         // 2. Starts with query
         if (matched == null) {
-            matched = apps.firstOrNull { it.label.lowercase().startsWith(cleanQuery) }
+            matched = apps.firstOrNull { it.label.lowercase().startsWith(targetQuery) }
         }
 
         // 3. Contains match
         if (matched == null) {
             matched = apps.firstOrNull {
-                it.label.lowercase().contains(cleanQuery) || it.packageName.lowercase().contains(cleanQuery)
+                it.label.lowercase().contains(targetQuery) || it.packageName.lowercase().contains(targetQuery)
+            }
+        }
+
+        // 4. Word boundary check
+        if (matched == null) {
+            matched = apps.firstOrNull { app ->
+                val words = app.label.lowercase().split(" ", "-", "_")
+                words.any { it.startsWith(targetQuery) || targetQuery.startsWith(it) }
             }
         }
 
@@ -201,7 +221,7 @@ class AndroidActionExecutor(private val context: Context) {
             if (launchIntent != null) {
                 launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(launchIntent)
-                ActionResult.Success("Launched ${matched.label} (${matched.packageName})")
+                ActionResult.Success("Launched ${matched.label}")
             } else {
                 ActionResult.Error("Found ${matched.label} but cannot launch directly.")
             }

@@ -26,32 +26,37 @@ class DeterministicRouter(private val executor: AndroidActionExecutor) {
         }
 
         // Battery telemetry
-        if (input.contains("battery") || input.contains("charge") || input.contains("charging")) {
+        if (input.contains("battery") || input.contains("charge") || input.contains("charging") ||
+            input.contains("चार्ज") || input.contains("बैटरी")) {
             return executor.getBatteryStatus()
         }
 
-        // Storage telemetry (New Phase 2)
-        if (input.contains("storage") || input.contains("space") || input.contains("memory bachi") || input.contains("kitna space")) {
+        // Storage telemetry
+        if (input.contains("storage") || input.contains("space") || input.contains("memory") ||
+            input.contains("jagah") || input.contains("kitna space") || input.contains("स्टोरेज") || input.contains("मेमोरी")) {
             return executor.getStorageStatus()
         }
 
-        // Network telemetry (New Phase 2)
-        if (input.contains("network") || input.contains("internet") || input.contains("net chal raha") || input.contains("wifi status")) {
+        // Network telemetry
+        if (input.contains("network") || input.contains("internet") || input.contains("net chal") ||
+            input.contains("wifi status") || input.contains("इंटरनेट") || input.contains("नेटवर्क")) {
             return executor.getNetworkStatus()
         }
 
         // Wi-Fi / Internet Settings Panel
-        if (input.contains("wifi panel") || input.contains("wi-fi setting") || input.contains("open wifi") || input.contains("wifi kholo")) {
+        if (input.contains("wifi panel") || input.contains("wi-fi setting") || input.contains("open wifi") ||
+            input.contains("wifi kholo") || input.contains("वाइफ़ाई")) {
             return executor.openWifiSettings()
         }
 
         // Bluetooth Settings
-        if (input.contains("bluetooth")) {
+        if (input.contains("bluetooth") || input.contains("ब्लूटूथ")) {
             return executor.openBluetoothSettings()
         }
 
         // Time / Date
-        if (input.contains("time") || input.contains("baje") || input.contains("date") || input.contains("tarikh")) {
+        if (input.contains("time") || input.contains("baje") || input.contains("date") ||
+            input.contains("tarikh") || input.contains("समय") || input.contains("तारीख")) {
             return executor.getCurrentTime()
         }
 
@@ -60,8 +65,8 @@ class DeterministicRouter(private val executor: AndroidActionExecutor) {
             return executor.getDeviceInfo()
         }
 
-        // List installed apps count (New Phase 2)
-        if (input.contains("installed apps") || input.contains("kitne app") || input.contains("all apps")) {
+        // List installed apps count
+        if (input.contains("installed apps") || input.contains("kitne app") || input.contains("all apps") || input.contains("कुल ऐप")) {
             val apps = executor.indexInstalledApps()
             return ActionResult.Success(
                 message = "R.E.X. has indexed ${apps.size} installed apps on this device.",
@@ -69,23 +74,34 @@ class DeterministicRouter(private val executor: AndroidActionExecutor) {
             )
         }
 
-        // Purge / Clear Cache Test (Safety Confirmation Demo - New Phase 2)
+        // Purge / Clear Cache Test
         if (input.contains("clear cache") || input.contains("purge") || input.contains("delete data") || input.contains("reset cache")) {
             return executor.requestClearDataSimulation()
         }
 
-        // Dynamic App Launching (English + Hinglish prefixes)
-        val openPrefixes = listOf("open ", "launch ", "start ", "run ", "kholo ", "chalao ")
-        for (prefix in openPrefixes) {
-            if (input.startsWith(prefix)) {
-                val appName = input.removePrefix(prefix).trim()
+        // --- DYNAMIC APP LAUNCHING (Natural Hindi + Hinglish + English) ---
+        // Clean common trigger/action verbs from voice
+        val openPatterns = listOf(
+            "open ", "launch ", "start ", "run ", "kholo ", "chalao ", "khol de ", "chala de ",
+            "khol do ", "chala do ", "khol ", "open kar ", "open karo ", "open kar do ",
+            "खोलो ", "खोल दो ", "चलाओ ", "शुरू करो ", "ओपन करो "
+        )
+
+        for (pattern in openPatterns) {
+            if (input.startsWith(pattern)) {
+                val appName = input.removePrefix(pattern).trim()
                 if (appName.isNotEmpty()) {
                     return executor.launchAppByName(appName)
                 }
             }
         }
 
-        val suffixPatterns = listOf(" kholo", " chalao", " open karo", " start karo")
+        val suffixPatterns = listOf(
+            " kholo", " chalao", " khol de", " khol do", " chala de", " chala do", " khol",
+            " open", " open karo", " open kar do", " start karo", " launch karo",
+            " खोलो", " खोल दो", " चलाओ", " चला दो", " ओपन करो"
+        )
+
         for (suffix in suffixPatterns) {
             if (input.endsWith(suffix)) {
                 val appName = input.removeSuffix(suffix).trim()
@@ -95,14 +111,21 @@ class DeterministicRouter(private val executor: AndroidActionExecutor) {
             }
         }
 
-        // Direct single-word app match (e.g. user just types "camera", "calculator", "whatsapp")
-        if (!input.contains(" ")) {
-            val appMatch = executor.launchAppByName(input)
-            if (appMatch is ActionResult.Success) {
-                return appMatch
+        // If user says "whatsapp app", "youtube app" etc.
+        if (input.endsWith(" app") || input.endsWith(" ऐप")) {
+            val appName = input.removeSuffix(" app").removeSuffix(" ऐप").trim()
+            if (appName.isNotEmpty()) {
+                val directMatch = executor.launchAppByName(appName)
+                if (directMatch is ActionResult.Success) return directMatch
             }
         }
 
-        return ActionResult.Error("R.E.X. does not recognize command offline. Online LLM reasoning activates in Phase 4.")
+        // Direct single/double word app search across all installed apps
+        val directMatch = executor.launchAppByName(input)
+        if (directMatch is ActionResult.Success) {
+            return directMatch
+        }
+
+        return ActionResult.Error("R.E.X. could not process: \"$rawInput\". In Phase 4, cloud LLM reasoning handles free-form talk!")
     }
 }
