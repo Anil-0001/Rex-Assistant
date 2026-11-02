@@ -1,13 +1,17 @@
 package com.personal.assistant.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.animation.ScaleAnimation
 import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,23 +22,30 @@ import androidx.lifecycle.lifecycleScope
 import com.personal.assistant.R
 import com.personal.assistant.core.actions.ActionResult
 import com.personal.assistant.core.actions.AndroidActionExecutor
+import com.personal.assistant.core.brain.GeminiCloudBrain
 import com.personal.assistant.core.router.DeterministicRouter
+import com.personal.assistant.core.router.HybridOrchestrator
 import com.personal.assistant.core.voice.RexSpeechRecognizer
 import com.personal.assistant.core.voice.RexTextToSpeech
 import com.personal.assistant.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var executor: AndroidActionExecutor
     private lateinit var router: DeterministicRouter
+    private lateinit var orchestrator: HybridOrchestrator
+    private lateinit var cloudBrain: GeminiCloudBrain
 
-    // Phase 3 Voice Pipeline
+    // Voice Engine Components (Phase 3)
     private lateinit var tts: RexTextToSpeech
     private lateinit var speechRecognizer: RexSpeechRecognizer
-    private var isListening = false
+    private var isListening: Boolean = false
+
+    private val prefs by lazy { getSharedPreferences("rex_prefs", Context.MODE_PRIVATE) }
 
     private val requestAudioPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -53,45 +64,32 @@ class MainActivity : AppCompatActivity() {
 
         executor = AndroidActionExecutor(this)
         router = DeterministicRouter(executor)
+        cloudBrain = GeminiCloudBrain()
+        orchestrator = HybridOrchestrator(executor, router, cloudBrain)
 
-        initVoiceEngines()
+        // Restore saved API Key
+        val savedKey = prefs.getString("gemini_api_key", "") ?: ""
+        if (savedKey.isNotEmpty()) {
+            cloudBrain.setApiKey(savedKey)
+        }
+
+        setupVoiceEngine()
         setupUI()
         startOrbPulseAnimation()
 
-        // Asynchronously warm-up installed apps index in background coroutine
+        // Background indexing of apps for instant tool execution
         lifecycleScope.launch(Dispatchers.IO) {
             executor.indexInstalledApps()
         }
     }
 
-    private fun initVoiceEngines() {
-        // 1. Text-To-Speech Initialization
-        tts = RexTextToSpeech(this) { success ->
+    private fun setupVoiceEngine() {
+        tts = RexTextToSpeech(this) { speaking ->
             runOnUiThread {
-                if (success) {
-                    binding.tvStatus.text = "R.E.X. // VOICE SYNTHESIS READY"
-                    binding.tvStatus.postDelayed({
-                        if (!isListening) {
-                            binding.tvStatus.text = getString(R.string.status_idle)
-                            binding.tvStatus.setTextColor(getColor(R.color.crimson_red))
-                        }
-                    }, 2000)
-                }
+                animateOrbSpeaking(speaking)
             }
         }
 
-        // Animate Arc Reactor orb when R.E.X. is speaking
-        tts.isSpeakingCallback = { speaking ->
-            runOnUiThread {
-                if (speaking) {
-                    animateOrbSpeaking(true)
-                } else {
-                    animateOrbSpeaking(false)
-                }
-            }
-        }
-
-        // 2. Speech-To-Text Recognizer Initialization
         speechRecognizer = RexSpeechRecognizer(
             context = this,
             onResult = { recognizedText ->
@@ -146,6 +144,10 @@ class MainActivity : AppCompatActivity() {
             handleResult(executor.openWifiSettings())
         }
 
+        binding.btnBrainConfig.setOnClickListener {
+            showApiKeyDialog()
+        }
+
         binding.btnSafetyDemo.setOnClickListener {
             handleResult(executor.requestClearDataSimulation())
         }
@@ -185,7 +187,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startVoiceInput() {
-        tts.stop() // Stop speaking when user wants to talk
+        tts.stop()
         speechRecognizer.startListening()
     }
 
@@ -205,19 +207,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun isNetworkConnected(): Boolean {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val capabilities = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
     private fun processCommand(command: String) {
-        binding.tvStatus.text = "R.E.X. // EXECUTING..."
+        binding.tvStatus.text = "R.E.X. // REASONING..."
         binding.tvStatus.setTextColor(getColor(R.color.ember_orange))
 
-        val result = router.execute(command)
-        handleResult(result)
+        val online = isNetworkConnected()
 
-        binding.tvStatus.postDelayed({
-            if (!isListening) {
-                binding.tvStatus.text = getString(R.string.status_idle)
-                binding.tvStatus.setTextColor(getColor(R.color.crimson_red))
+        lifecycleScope.launch(Dispatchers.IO) {
+            val result = orchestrator.process(command, online)
+            withContext(Dispatchers.Main) {
+                handleResult(result)
+                binding.tvStatus.postDelayed({
+                    if (!isListening) {
+                        binding.tvStatus.text = getString(R.string.status_idle)
+                        binding.tvStatus.setTextColor(getColor(R.color.crimson_red))
+                    }
+                }, 1500)
             }
-        }, 1500)
+        }
     }
 
     private fun handleResult(result: ActionResult) {
@@ -227,12 +240,11 @@ class MainActivity : AppCompatActivity() {
                     append("✅ ")
                     append(result.message)
                     if (!result.details.isNullOrEmpty()) {
-                        append("\n\nTelemetry:\n")
+                        append("\n\nTelemetry / Context:\n")
                         append(result.details)
                     }
                 }
                 displayResponse(fullMsg)
-                // Spoken feedback for success
                 tts.speak(result.message)
             }
             is ActionResult.RequiresConfirmation -> {
@@ -245,8 +257,44 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun showApiKeyDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_api_key, null)
+        val etInput = dialogView.findViewById<EditText>(R.id.etApiKeyInput)
+        val btnCancel = dialogView.findViewById<android.widget.Button>(R.id.btnCancelKey)
+        val btnSave = dialogView.findViewById<android.widget.Button>(R.id.btnSaveKey)
+
+        val currentKey = prefs.getString("gemini_api_key", "") ?: ""
+        if (currentKey.isNotEmpty()) {
+            etInput.setText(currentKey)
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        btnCancel.setOnClickListener { dialog.dismiss() }
+
+        btnSave.setOnClickListener {
+            val entered = etInput.text.toString().trim()
+            if (entered.length >= 20) {
+                prefs.edit().putString("gemini_api_key", entered).apply()
+                cloudBrain.setApiKey(entered)
+                dialog.dismiss()
+                val success = "Gemini 1.5 Flash Cognitive Brain connected successfully!"
+                displayResponse("🧠 $success\nYou can now speak in natural conversational language!")
+                tts.speak("AI Brain connected, boss.")
+            } else {
+                Toast.makeText(this, "Please enter a valid API key", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        dialog.show()
+    }
+
     private fun showSafetyConfirmationModal(confirmation: ActionResult.RequiresConfirmation) {
-        // Spoken prompt for security confirmation
         tts.speak("Sensitive action requested. Please confirm on screen.")
 
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_confirmation, null)

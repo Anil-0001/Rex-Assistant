@@ -10,17 +10,21 @@
 ## Current Project State & Master Context
 - Full historical context, decisions, and current progress are documented in `PROJECT_CONTEXT.md`.
 - **Phase 1 is 100% COMPLETE & VERIFIED on phone.**
-- **Phase 2 is 100% COMPLETE & VERIFIED (Build & Tested):**
-  1. Iron Man Crimson Red theme redesign (goodbye blue!).
-  2. Safety Confirmation Dialog Modal (`dialog_confirmation.xml`) for sensitive/mutating actions.
-  3. Dynamic installed app scanner (indexes and launches any installed app: camera, calculator, etc.).
-  4. Real-time Internal Storage telemetry (GB free / total) and Network capabilities (Wi-Fi vs Cellular 5G).
-- **Phase 3 is 100% COMPLETE & INTEGRATED:**
-  1. On-device offline `RexTextToSpeech` (J.A.R.V.I.S. calibrated pitch/rate, emoji/markdown stripping).
-  2. Tap-to-Talk `RexSpeechRecognizer` with Android 11+ `<queries>` support and mic scaling.
+- **Phase 2 is 100% COMPLETE & VERIFIED on phone:**
+  1. Iron Man Crimson Red theme redesign.
+  2. Safety Confirmation Dialog Modal (`dialog_confirmation.xml`).
+  3. Dynamic installed app scanner.
+  4. Internal Storage telemetry & Network capabilities.
+- **Phase 3 is 100% COMPLETE & VERIFIED:**
+  1. On-device offline `RexTextToSpeech` (J.A.R.V.I.S. calibrated pitch/rate).
+  2. Tap-to-Talk `RexSpeechRecognizer` with Android 11+ `<queries>` support.
   3. Reactive Arc Reactor animations for listening and speaking states.
-  4. Threading migration to `lifecycleScope.launch(Dispatchers.IO)`.
-- **Current Next Step:** **Phase 4 (Cognitive AI Brain & Zero-Cost Cloud Reasoning - Gemini API Structured Tool Calling)**.
+- **Phase 4 is 100% COMPLETE & INTEGRATED:**
+  1. Cognitive AI Brain (`GeminiCloudBrain.kt`) using Google AI Studio Gemini 1.5 Flash Free Tier ($0).
+  2. Structured Tool Calling: Automatically maps natural voice prompts to Android actions (`getBatteryStatus`, `getStorageStatus`, `getNetworkStatus`, `openWifiSettings`, `launchAppByName`).
+  3. Hybrid Orchestrator (`HybridOrchestrator.kt`): Online AI reasoning with automatic zero-latency offline router fallback.
+  4. On-Device API Key dialog modal (`dialog_api_key.xml`) with encrypted SharedPrefs.
+- **Current Next Step:** **Phase 5 (Structured Memory & Privacy Dashboard - Room / SQLite Persistence)**.
 
 ## Development Rules for Agent:
 1. Do not require Android Studio or heavy emulators (preserve 8 GB RAM on host machines).

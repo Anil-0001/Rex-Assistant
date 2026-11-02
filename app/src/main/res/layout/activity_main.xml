@@ -45,7 +45,7 @@
             android:background="@drawable/chip_background"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
-            android:text="PHASE 3 • VOICE ACTIVE"
+            android:text="PHASE 4 • AI BRAIN"
             android:textColor="@color/ember_orange"
             android:textSize="11sp"
             android:textStyle="bold" />
@@ -206,6 +206,18 @@
                 android:background="@drawable/chip_background"
                 android:text="⚙️ Wi-Fi Panel"
                 android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                app:backgroundTint="@null" />
+
+            <Button
+                android:id="@+id/btnBrainConfig"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/chip_background"
+                android:text="🧠 AI Brain"
+                android:textColor="@color/ember_orange"
                 android:textSize="12sp"
                 app:backgroundTint="@null" />
 

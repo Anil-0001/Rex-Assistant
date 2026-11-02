@@ -12,9 +12,9 @@
 - **Design Aesthetic:** **Iron Man Crimson Red (`#FF1A3C`) & Ember Gold (`#FF8C00`)** with Obsidian Deep Dark (`#080406`) backgrounds and pulsing Arc Reactor core.
 - **Strict Budget:** **₹0 target** (Zero-cost). Only free-tier APIs (e.g. Google AI Studio / Gemini API free tier), open-source libraries, and local on-device computation. No mandatory paid subscriptions.
 - **Safety & Autonomy Model:** Tiered action security:
-  - *Tier 0 (Safe Read):* Battery, storage, network telemetry, clock $\rightarrow$ execute directly.
-  - *Tier 1 (External Launch):* Opening any installed app, opening settings panels $\rightarrow$ execute with notice.
-  - *Tier 2 (Mutating / Sensitive):* Modifying states, clearing data $\rightarrow$ mandatory confirmation prompt dialog modal before execution.
+  - *Tier 0 (Safe Read):* Battery, storage, network telemetry, clock -> execute directly.
+  - *Tier 1 (External Launch):* Opening any installed app, opening settings panels -> execute with notice.
+  - *Tier 2 (Mutating / Sensitive):* Modifying states, clearing data -> mandatory confirmation prompt dialog modal before execution.
 - **Decoupled Architecture:** Separation between the cognitive reasoning layer (SLM / LLM) and the physical Android action executor. AI text output is never directly executed without passing through the validated Action Registry.
 
 ---
@@ -30,36 +30,27 @@
 
 ## 3. Completed Milestones
 
-### ✅ Phase 1: Foundation, Build Pipeline & Wi-Fi Sideloading (100% COMPLETE & VERIFIED ON PHONE)
+### ✅ Phase 1: Foundation, Build Pipeline & Wi-Fi Sideloading (100% COMPLETE & VERIFIED)
 - Gradle 8.7 wrapper configured with memory caps (`-Xmx2048m`) in `gradle.properties`.
 - Modular architecture with `ActionResult.kt`, `AndroidActionExecutor.kt`, and `DeterministicRouter.kt`.
 - Initial baseline UI and local Wi-Fi distribution server.
 
 ### ✅ Phase 2: Deep Phone Control & Safety Engine (100% COMPLETE & VERIFIED)
-1. **Redesigned Iron Man Crimson Theme:** Completely eliminated the old blue theme. Upgraded to Crimson Red (`#FF1A3C`), Ember Gold (`#FF8C00`), and Obsidian space dark (`#080406`) across all drawables, vector icons, buttons, and layouts.
-2. **Safety Confirmation Modal (`dialog_confirmation.xml`):**
-   - High-priority security pop-up for mutating/sensitive actions (e.g., data purge/reset).
-   - Features Action ID header, risk explanation, "ABORT" button, and "CONFIRM & EXECUTE" button with executable callback.
-3. **Internal Storage Telemetry:** Real-time calculation of free and total GB (`StatFs` on `/data`) with percentage and formatted output.
-4. **Network Telemetry:** Active network inspection (`ConnectivityManager` & `NetworkCapabilities`) reporting Wi-Fi 📶, Cellular 📡 (5G/4G), or Offline with downstream bandwidth.
-5. **Dynamic Installed App Scanner:** Queries all launchable apps on the device in the background, caching them for fast exact and prefix matching (launches Camera, Calculator, WhatsApp, etc.).
-6. **New Quick Action Chips:** Battery, Storage, Network, Index Apps, Wi-Fi Panel, and Safety Test demo.
+- Redesigned Iron Man Crimson Theme (`#FF1A3C`, `#FF8C00`, `#080406`).
+- Safety Confirmation Modal (`dialog_confirmation.xml`) for mutating/sensitive actions.
+- Internal Storage Telemetry (`StatFs` on `/data`) & Network Telemetry (Wi-Fi vs Cellular 5G).
+- Dynamic Installed App Scanner (queries all launchable apps in background).
 
----
+### ✅ Phase 3: Voice Interaction Pipeline (Listen & Speak) (100% COMPLETE & VERIFIED)
+- Offline `RexTextToSpeech` engine with calibrated J.A.R.V.I.S. rate and pitch.
+- `RexSpeechRecognizer` tap-to-talk speech recognition with Android 11+ `<queries>` support.
+- Reactive pulsing Arc Reactor animations during listening and speaking states.
 
-### ✅ Phase 3: Voice Interaction Pipeline (Listen & Speak) (100% COMPLETE & INTEGRATED)
-1. **Native Text-To-Speech Engine (`RexTextToSpeech.kt`):**
-   - On-device offline `TextToSpeech` calibrated to a crisp, calm J.A.R.V.I.S. cadence (Pitch: 0.92, Rate: 0.98).
-   - Emojis, markdown symbols, and technical chars cleaned dynamically before speaking.
-   - Spoken feedback integrated into all command executions, safety alerts, and errors.
-2. **Tap-to-Talk Speech Recognition (`RexSpeechRecognizer.kt`):**
-   - Android native `SpeechRecognizer` activated with the glowing Mic button (`btnMic`).
-   - Package visibility intent `<action android:name="android.speech.RecognitionService" />` configured for Android 11+ (API 34).
-   - Real-time listening indicator with pulsing mic scaling and dynamic status messages.
-3. **Reactive Arc Reactor Animations:**
-   - Reactor core expands/pulses dynamically when R.E.X. is speaking and scales up when listening.
-4. **Lifecycle & Threading Optimization:**
-   - App index warm-up migrated to `lifecycleScope.launch(Dispatchers.IO)`.
+### ✅ Phase 4: Cognitive AI Brain & Zero-Cost Cloud Reasoning (100% COMPLETE & INTEGRATED)
+- **Zero-Cost Cognitive Brain (`GeminiCloudBrain.kt`):** Directly interfaces with Google AI Studio's Gemini 1.5 Flash Free Tier via native HTTPS JSON (0 external SDK dependencies).
+- **Structured Tool / Function Calling:** Declares phone actions (`getBatteryStatus`, `getStorageStatus`, `getNetworkStatus`, `openWifiSettings`, `launchAppByName`) to the model. The model automatically emits JSON function calls for physical phone actions.
+- **Hybrid Orchestrator (`HybridOrchestrator.kt`):** Seamlessly bridges online cloud reasoning with zero-latency local offline fallback when offline.
+- **Secure On-Device Key Storage:** Dialog (`dialog_api_key.xml`) to paste free Gemini API key, stored locally in private SharedPreferences.
 
 ---
 
@@ -68,31 +59,11 @@
 - **Phase 1: Foundation, Build Pipeline & Wi-Fi Sideloading** *(COMPLETED)*
 - **Phase 2: Deep Phone Control & Safety Engine** *(COMPLETED)*
 - **Phase 3: Voice Interaction Pipeline (Listen & Speak)** *(COMPLETED)*
-- **Phase 4: Cognitive AI Brain & Zero-Cost Cloud Reasoning** *(CURRENT NEXT STEP)*
-  - Google AI Studio (Gemini free tier) integration with structured JSON tool-calling.
-  - Natural language conversational reasoning mapped to the Action Registry.
-- **Phase 5: Local Memory & Privacy Dashboard**
+- **Phase 4: Cognitive AI Brain & Zero-Cost Cloud Reasoning** *(COMPLETED)*
+- **Phase 5: Local Memory & Privacy Dashboard** *(CURRENT NEXT STEP)*
   - Room / SQLite local database for short-term and persistent memory.
   - UI to inspect, edit, and delete memories.
 - **Phase 6: Offline Autonomy & Local SLM Exploration**
-  - Comprehensive offline fallback rules.
-  - Small model (0.5B–1.5B) benchmarking on Snapdragon 695.
+  - Small model (0.5B-1.5B) benchmarking on Snapdragon 695.
 - **Phase 7: Advanced Android Features & Experimental Wake-Word**
-  - Foreground service with persistent notification.
-  - Local keyword spotter (wake-word) experimentation.
-
----
-
-## 5. Instructions for Windows (Asus Laptop) Session Resume
-
-When opening this project on the Asus Windows laptop to start **Phase 3**:
-1. Verify Git branch is `main` (`git pull origin main`).
-2. Build the app using:
-   ```cmd
-   gradlew.bat assembleDebug
-   ```
-3. Run the local distribution server:
-   ```cmd
-   python -m http.server 8080 --directory dist
-   ```
-4. Start **Phase 3 (Voice Engine: TTS + STT)** directly.
+  - Foreground service with persistent notification & local wake-word keyword spotter.
