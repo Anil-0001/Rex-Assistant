@@ -8,8 +8,11 @@ class DeterministicRouter(private val executor: AndroidActionExecutor) {
     fun execute(rawInput: String): ActionResult {
         var input = rawInput.trim().lowercase()
 
-        // Strip "rex", "hey rex", "rex sun", "sun rex" prefixes
-        val namePrefixes = listOf("hey rex ", "rex ", "rex sun ", "sun rex ")
+        // Strip "rex", "hey rex", "rex sun", "sun rex", and Hindi prefixes
+        val namePrefixes = listOf(
+            "hey rex ", "rex ", "rex sun ", "sun rex ",
+            "हे रेक्स ", "रेक्स सुनो ", "रेक्स ", "सुनो रेक्स "
+        )
         for (prefix in namePrefixes) {
             if (input.startsWith(prefix)) {
                 input = input.removePrefix(prefix).trim()
@@ -18,10 +21,42 @@ class DeterministicRouter(private val executor: AndroidActionExecutor) {
         }
 
         // R.E.X. identity / status query
-        if (input == "kaun ho" || input == "who are you" || input == "rex" || input == "status") {
+        if (input == "kaun ho" || input == "who are you" || input == "rex" || input == "status" || input == "तुम कौन हो") {
             return ActionResult.Success(
                 message = "Main hoon R.E.X. (Responsive Edge Executor) — aapka personal on-device AI assistant.",
                 details = "System: All cores operational | Mode: Local Offline Priority | Security: Tiered Enforced"
+            )
+        }
+
+        // Common conversational greetings (Offline resilience)
+        if (input == "hello" || input == "hi" || input == "hey" || input == "namaste" ||
+            input == "नमस्ते" || input == "हेलो" || input == "नमस्कार") {
+            return ActionResult.Success(
+                message = "Namaste boss! R.E.X. ready hai. Kaise madad karun?",
+                details = "Mode: Offline Greeting Handler"
+            )
+        }
+
+        if (input.contains("kaise ho") || input.contains("how are you") || input.contains("kya haal") ||
+            input.contains("हाल चाल") || input.contains("कैसे हो")) {
+            return ActionResult.Success(
+                message = "Main bilkul badhiya hoon boss! All systems operational.",
+                details = "Health: 100% | Mode: Offline Operational"
+            )
+        }
+
+        if (input.contains("thank you") || input.contains("thanks") || input.contains("shukriya") ||
+            input.contains("dhanyawad") || input.contains("धन्यवाद") || input.contains("शुक्रिया")) {
+            return ActionResult.Success(
+                message = "Aapka swagat hai boss! Always at your service.",
+                details = "Mode: Polite Feedback"
+            )
+        }
+
+        if (input == "bye" || input == "goodbye" || input == "alvida" || input == "अलविदा" || input == "बाय") {
+            return ActionResult.Success(
+                message = "Alvida boss! Have a great time ahead.",
+                details = "Mode: Standby"
             )
         }
 

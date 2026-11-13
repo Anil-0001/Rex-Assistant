@@ -156,8 +156,8 @@ class AndroidActionExecutor(private val context: Context) {
         return ActionResult.Success("Current time: $formatted")
     }
 
-    fun indexInstalledApps(): List<InstalledAppInfo> {
-        if (appIndexCache != null) return appIndexCache!!
+    fun indexInstalledApps(forceRefresh: Boolean = false): List<InstalledAppInfo> {
+        if (!forceRefresh && appIndexCache != null) return appIndexCache!!
 
         val pm = context.packageManager
         val mainIntent = Intent(Intent.ACTION_MAIN, null).apply {

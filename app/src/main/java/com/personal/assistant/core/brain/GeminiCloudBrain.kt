@@ -186,7 +186,18 @@ class GeminiCloudBrain(private var apiKey: String = "") : RexCognitiveBrain {
                 val funcCall = part.getJSONObject("functionCall")
                 val toolName = funcCall.getString("name")
                 val argsObj = funcCall.optJSONObject("args")
-                val queryArg = if (argsObj != null && argsObj.has("query")) argsObj.getString("query") else null
+                val queryArg = argsObj?.let {
+                    val q = it.optString("query")
+                    if (q.isNotEmpty()) q
+                    else {
+                        val n = it.optString("name")
+                        if (n.isNotEmpty()) n
+                        else {
+                            val a = it.optString("app")
+                            if (a.isNotEmpty()) a else it.optString("appName")
+                        }
+                    }
+                }?.ifBlank { null }
 
                 return BrainDecision.ExecuteTool(
                     toolName = toolName,

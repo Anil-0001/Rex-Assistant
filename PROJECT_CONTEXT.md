@@ -46,11 +46,19 @@
 - `RexSpeechRecognizer` tap-to-talk speech recognition with Android 11+ `<queries>` support.
 - Reactive pulsing Arc Reactor animations during listening and speaking states.
 
-### ✅ Phase 4: Cognitive AI Brain & Zero-Cost Cloud Reasoning (100% COMPLETE & INTEGRATED)
+### ✅ Phase 4: Cognitive AI Brain & Zero-Cost Cloud Reasoning (100% COMPLETE & AUDITED)
 - **Zero-Cost Cognitive Brain (`GeminiCloudBrain.kt`):** Directly interfaces with Google AI Studio's Gemini 1.5 Flash Free Tier via native HTTPS JSON (0 external SDK dependencies).
-- **Structured Tool / Function Calling:** Declares phone actions (`getBatteryStatus`, `getStorageStatus`, `getNetworkStatus`, `openWifiSettings`, `launchAppByName`) to the model. The model automatically emits JSON function calls for physical phone actions.
+- **Structured Tool / Function Calling:** Declares phone actions (`getBatteryStatus`, `getStorageStatus`, `getNetworkStatus`, `openWifiSettings`, `launchAppByName`) to the model. The model automatically emits JSON function calls for physical phone actions. Resilient parameter parsing (`query`, `name`, `appName`, `app`).
 - **Hybrid Orchestrator (`HybridOrchestrator.kt`):** Seamlessly bridges online cloud reasoning with zero-latency local offline fallback when offline.
 - **Secure On-Device Key Storage:** Dialog (`dialog_api_key.xml`) to paste free Gemini API key, stored locally in private SharedPreferences.
+- **Full Architecture Audit & Hardening:**
+  - Fixed TTS `isSpeakingCallback` wiring bug in `MainActivity.kt` so Arc Reactor pulsing accurately pulses during live speech.
+  - Fixed audio text sanitization in `RexTextToSpeech.kt` so parenthesis contents (e.g. charging state, storage percent, device specs) are preserved and spoken clearly.
+  - Added fallback utterance listener for non-Google system TTS engines.
+  - Implemented automatic soft keyboard dismissal on command submission.
+  - Added Android lifecycle pause protection (`onPause`) for audio recording and speech.
+  - Enriched `DeterministicRouter.kt` with Hindi triggers and polite conversational offline fallbacks (Namaste, greetings, thanks).
+  - Added dynamic app index refresh support (`forceRefresh = true`).
 
 ---
 

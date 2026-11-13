@@ -17,13 +17,12 @@ import java.util.Locale
  */
 class RexTextToSpeech(
     private val context: Context,
+    var isSpeakingCallback: ((Boolean) -> Unit)? = null,
     private val onInitComplete: ((Boolean) -> Unit)? = null
 ) : TextToSpeech.OnInitListener {
 
     private var tts: TextToSpeech? = null
     private var isInitialized = false
-
-    var isSpeakingCallback: ((Boolean) -> Unit)? = null
 
     init {
         // Initialize Google TTS engine explicitly if available
@@ -33,22 +32,7 @@ class RexTextToSpeech(
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             setupJarvisVoice()
-
-            tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                override fun onStart(utteranceId: String?) {
-                    isSpeakingCallback?.invoke(true)
-                }
-
-                override fun onDone(utteranceId: String?) {
-                    isSpeakingCallback?.invoke(false)
-                }
-
-                @Deprecated("Deprecated in Java")
-                override fun onError(utteranceId: String?) {
-                    isSpeakingCallback?.invoke(false)
-                }
-            })
-
+            setupUtteranceListener()
             isInitialized = true
             Log.d("RexTTS", "R.E.X. Deep Male Jarvis Voice online.")
             onInitComplete?.invoke(true)
@@ -57,14 +41,34 @@ class RexTextToSpeech(
             tts = TextToSpeech(context.applicationContext) { fallbackStatus ->
                 if (fallbackStatus == TextToSpeech.SUCCESS) {
                     setupJarvisVoice()
+                    setupUtteranceListener()
                     isInitialized = true
+                    Log.d("RexTTS", "R.E.X. System TTS fallback online.")
                     onInitComplete?.invoke(true)
                 } else {
                     isInitialized = false
+                    Log.e("RexTTS", "TTS Initialization failed completely.")
                     onInitComplete?.invoke(false)
                 }
             }
         }
+    }
+
+    private fun setupUtteranceListener() {
+        tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onStart(utteranceId: String?) {
+                isSpeakingCallback?.invoke(true)
+            }
+
+            override fun onDone(utteranceId: String?) {
+                isSpeakingCallback?.invoke(false)
+            }
+
+            @Deprecated("Deprecated in Java")
+            override fun onError(utteranceId: String?) {
+                isSpeakingCallback?.invoke(false)
+            }
+        })
     }
 
     private fun setupJarvisVoice() {
@@ -124,13 +128,14 @@ class RexTextToSpeech(
         if (cleanedText.isBlank()) return
 
         val queueMode = if (flushPrevious) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
+        val utteranceId = "REX_${System.currentTimeMillis()}"
         val params = Bundle().apply {
-            putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "REX_${System.currentTimeMillis()}")
+            putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId)
             // Audio stream for clean voice playback
             putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1.0f)
         }
 
-        tts?.speak(cleanedText, queueMode, params, "REX_${System.currentTimeMillis()}")
+        tts?.speak(cleanedText, queueMode, params, utteranceId)
     }
 
     fun stop() {
@@ -149,13 +154,15 @@ class RexTextToSpeech(
 
     private fun cleanForSpeech(input: String): String {
         return input
-            .replace("[*#`_~]".toRegex(), "")
-            .replace("\\[.*?\\]".toRegex(), "")
-            .replace("\\(.*?\\)".toRegex(), "")
-            .replace("[\\p{So}\\p{Cn}]".toRegex(), "")
+            // 1. Convert Markdown links [Title](url) to Title
+            .replace(Regex("\\[(.*?)\\]\\(.*?\\)"), "$1")
+            // 2. Remove markdown formatting characters and brackets/parentheses WITHOUT erasing inner text
+            .replace(Regex("[*#`_~\\[\\]()]"), " ")
+            // 3. Remove non-pronounceable symbols and emojis (keeps standard alphanumeric, punctuation, Devanagari)
+            .replace(Regex("[\\p{So}\\p{Cn}]"), " ")
             .replace("->", " ")
             .replace("|", " ")
-            .replace("\\s+".toRegex(), " ")
+            .replace(Regex("\\s+"), " ")
             .trim()
     }
 }

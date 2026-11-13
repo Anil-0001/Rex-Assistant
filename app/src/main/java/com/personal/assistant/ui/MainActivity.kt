@@ -84,11 +84,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupVoiceEngine() {
-        tts = RexTextToSpeech(this) { speaking ->
-            runOnUiThread {
-                animateOrbSpeaking(speaking)
+        tts = RexTextToSpeech(
+            context = this,
+            isSpeakingCallback = { speaking ->
+                runOnUiThread {
+                    animateOrbSpeaking(speaking)
+                }
             }
-        }
+        )
 
         speechRecognizer = RexSpeechRecognizer(
             context = this,
@@ -129,7 +132,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnAppScan.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
-                val apps = executor.indexInstalledApps()
+                val apps = executor.indexInstalledApps(forceRefresh = true)
                 val result = ActionResult.Success(
                     message = "R.E.X. indexed ${apps.size} launchable apps.",
                     details = "Sample apps: " + apps.take(10).joinToString { it.label }
@@ -157,6 +160,7 @@ class MainActivity : AppCompatActivity() {
             if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_GO) {
                 val query = binding.etCommand.text.toString().trim()
                 if (query.isNotEmpty()) {
+                    hideKeyboard()
                     processCommand(query)
                     binding.etCommand.text.clear()
                 }
@@ -359,6 +363,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             binding.orbCore.clearAnimation()
         }
+    }
+
+    private fun hideKeyboard() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+        imm?.hideSoftInputFromWindow(binding.etCommand.windowToken, 0)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        speechRecognizer.stopListening()
+        tts.stop()
     }
 
     override fun onDestroy() {
