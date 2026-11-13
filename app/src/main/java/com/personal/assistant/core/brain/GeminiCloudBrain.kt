@@ -44,32 +44,36 @@ class GeminiCloudBrain(private var apiKey: String = "") : RexCognitiveBrain {
         val endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
         val url = URL(endpoint)
         val conn = url.openConnection() as HttpURLConnection
-        conn.requestMethod = "POST"
-        conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
-        conn.doOutput = true
-        conn.connectTimeout = 15000
-        conn.readTimeout = 20000
+        return try {
+            conn.requestMethod = "POST"
+            conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+            conn.doOutput = true
+            conn.connectTimeout = 15000
+            conn.readTimeout = 20000
 
-        val requestBody = buildRequestBody(prompt)
+            val requestBody = buildRequestBody(prompt)
 
-        OutputStreamWriter(conn.outputStream, "UTF-8").use { os ->
-            os.write(requestBody.toString())
-            os.flush()
-        }
-
-        val responseCode = conn.responseCode
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            val responseText = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-            return parseGeminiResponse(responseText)
-        } else {
-            val errorRaw = conn.errorStream?.bufferedReader()?.use(BufferedReader::readText) ?: "Code: $responseCode"
-            val errorClean = try {
-                val errObj = JSONObject(errorRaw)
-                errObj.optJSONObject("error")?.optString("message") ?: errorRaw
-            } catch (e: Exception) {
-                errorRaw
+            OutputStreamWriter(conn.outputStream, "UTF-8").use { os ->
+                os.write(requestBody.toString())
+                os.flush()
             }
-            return BrainDecision.Error("Gemini ($responseCode): $errorClean")
+
+            val responseCode = conn.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val responseText = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                parseGeminiResponse(responseText)
+            } else {
+                val errorRaw = conn.errorStream?.bufferedReader()?.use(BufferedReader::readText) ?: "Code: $responseCode"
+                val errorClean = try {
+                    val errObj = JSONObject(errorRaw)
+                    errObj.optJSONObject("error")?.optString("message") ?: errorRaw
+                } catch (e: Exception) {
+                    errorRaw
+                }
+                BrainDecision.Error("Gemini ($responseCode): $errorClean")
+            }
+        } finally {
+            conn.disconnect()
         }
     }
 
@@ -93,6 +97,7 @@ class GeminiCloudBrain(private var apiKey: String = "") : RexCognitiveBrain {
                         - openBluetoothSettings: Open phone Bluetooth settings.
                         - getCurrentTime: Check current time, day, and date.
                         - getDeviceInfo: Get phone model, hardware specs, and Android OS version.
+                        - getInstalledAppsCount: Check total count and list of installed phone applications.
                         - launchAppByName: Launch any installed phone app (YouTube, Camera, WhatsApp, Calculator, Settings, Chrome, etc.). Parameter: 'query'.
                         - requestClearDataSimulation: Reset cache/logs requiring user confirmation.
                         
@@ -139,6 +144,7 @@ class GeminiCloudBrain(private var apiKey: String = "") : RexCognitiveBrain {
         funcs.put(createSimpleFunc("openBluetoothSettings", "Open device Bluetooth settings screen."))
         funcs.put(createSimpleFunc("getCurrentTime", "Get current time, day, and date."))
         funcs.put(createSimpleFunc("getDeviceInfo", "Get device model, processor, and Android OS version."))
+        funcs.put(createSimpleFunc("getInstalledAppsCount", "Check total count and sample names of installed applications on the device."))
         funcs.put(createSimpleFunc("requestClearDataSimulation", "Request sensitive cache reset requiring user confirmation."))
 
         // launchAppByName with argument
@@ -178,41 +184,51 @@ class GeminiCloudBrain(private var apiKey: String = "") : RexCognitiveBrain {
         val content = firstCandidate.optJSONObject("content") ?: return BrainDecision.Error("No content in candidate.")
         val parts = content.optJSONArray("parts") ?: return BrainDecision.Error("No parts in candidate.")
 
+        var functionCallObj: JSONObject? = null
+        val textParts = mutableListOf<String>()
+
         for (i in 0 until parts.length()) {
             val part = parts.getJSONObject(i)
-
-            // 1. Tool Call emitted by model
             if (part.has("functionCall")) {
-                val funcCall = part.getJSONObject("functionCall")
-                val toolName = funcCall.getString("name")
-                val argsObj = funcCall.optJSONObject("args")
-                val queryArg = argsObj?.let {
-                    val q = it.optString("query")
-                    if (q.isNotEmpty()) q
-                    else {
-                        val n = it.optString("name")
-                        if (n.isNotEmpty()) n
-                        else {
-                            val a = it.optString("app")
-                            if (a.isNotEmpty()) a else it.optString("appName")
-                        }
-                    }
-                }?.ifBlank { null }
-
-                return BrainDecision.ExecuteTool(
-                    toolName = toolName,
-                    argument = queryArg,
-                    spokenReasoning = null
-                )
+                functionCallObj = part.getJSONObject("functionCall")
             }
-
-            // 2. Direct conversational answer emitted by model
             if (part.has("text")) {
-                val reply = part.getString("text").trim()
-                if (reply.isNotEmpty()) {
-                    return BrainDecision.DirectReply(reply)
+                val t = part.getString("text").trim()
+                if (t.isNotEmpty()) {
+                    textParts.add(t)
                 }
             }
+        }
+
+        // 1. If Gemini decided to call a phone execution tool
+        if (functionCallObj != null) {
+            val toolName = functionCallObj.getString("name")
+            val argsObj = functionCallObj.optJSONObject("args")
+            val queryArg = argsObj?.let {
+                val q = it.optString("query")
+                if (q.isNotEmpty()) q
+                else {
+                    val n = it.optString("name")
+                    if (n.isNotEmpty()) n
+                    else {
+                        val a = it.optString("app")
+                        if (a.isNotEmpty()) a else it.optString("appName")
+                    }
+                }
+            }?.ifBlank { null }
+
+            val reasoning = if (textParts.isNotEmpty()) textParts.joinToString(" ") else null
+
+            return BrainDecision.ExecuteTool(
+                toolName = toolName,
+                argument = queryArg,
+                spokenReasoning = reasoning
+            )
+        }
+
+        // 2. If Gemini replied conversationally
+        if (textParts.isNotEmpty()) {
+            return BrainDecision.DirectReply(textParts.joinToString("\n\n"))
         }
 
         return BrainDecision.Error("AI Brain did not produce executable decision.")

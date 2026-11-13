@@ -283,7 +283,14 @@ class MainActivity : AppCompatActivity() {
 
         btnSave.setOnClickListener {
             val entered = etInput.text.toString().trim()
-            if (entered.length >= 20) {
+            if (entered.isEmpty()) {
+                prefs.edit().remove("gemini_api_key").apply()
+                cloudBrain.setApiKey("")
+                dialog.dismiss()
+                val resetMsg = "API Key removed. R.E.X. switched to Offline Deterministic Mode."
+                displayResponse("⚡ $resetMsg")
+                tts.speak("AI Brain disconnected. Offline mode active, boss.")
+            } else if (entered.length >= 20) {
                 prefs.edit().putString("gemini_api_key", entered).apply()
                 cloudBrain.setApiKey(entered)
                 dialog.dismiss()
@@ -291,7 +298,7 @@ class MainActivity : AppCompatActivity() {
                 displayResponse("🧠 $success\nYou can now speak in natural conversational language!")
                 tts.speak("AI Brain connected, boss.")
             } else {
-                Toast.makeText(this, "Please enter a valid API key", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Please enter a valid API key (or clear field to disconnect)", Toast.LENGTH_LONG).show()
             }
         }
 

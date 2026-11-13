@@ -31,7 +31,15 @@ class HybridOrchestrator(
 
         return when (decision) {
             is BrainDecision.ExecuteTool -> {
-                executeToolDecision(decision.toolName, decision.argument)
+                val actionResult = executeToolDecision(decision.toolName, decision.argument)
+                if (!decision.spokenReasoning.isNullOrBlank() && actionResult is ActionResult.Success) {
+                    ActionResult.Success(
+                        message = "${decision.spokenReasoning}\n${actionResult.message}",
+                        details = actionResult.details
+                    )
+                } else {
+                    actionResult
+                }
             }
             is BrainDecision.DirectReply -> {
                 ActionResult.Success(
@@ -60,6 +68,13 @@ class HybridOrchestrator(
             "openBluetoothSettings" -> executor.openBluetoothSettings()
             "getCurrentTime" -> executor.getCurrentTime()
             "getDeviceInfo" -> executor.getDeviceInfo()
+            "getInstalledAppsCount" -> {
+                val apps = executor.indexInstalledApps()
+                ActionResult.Success(
+                    message = "R.E.X. has indexed ${apps.size} installed apps on this device.",
+                    details = "Sample apps: " + apps.take(8).joinToString { it.label }
+                )
+            }
             "launchAppByName" -> {
                 if (!argument.isNullOrBlank()) {
                     executor.launchAppByName(argument)
